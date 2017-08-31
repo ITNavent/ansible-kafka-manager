@@ -1,0 +1,36 @@
+---
+
+- name: Get kafka-manager archive
+  get_url:
+    url: "https://github.com/yahoo/kafka-manager/archive/{{ kafka_manager_version }}.tar.gz"
+    dest: "/tmp/kafka-manager-{{ kafka_manager_version }}.tar.gz"
+  tags:
+    - install
+
+- name: Untar kafka-manager archive
+  unarchive:
+    src: "/tmp/kafka-manager-{{ kafka_manager_version }}.tar.gz"
+    dest: "/tmp/kafka-manager/"
+  tags:
+    - install
+
+- name: Build kafka-manager
+  command: ./sbt clean dist
+  args:
+    chdir: "/tmp/kafka-manager/"
+    creates: "/tmp/kafka-manager/target/universal/kafka-manager-{{ kafka_manager_version }}.zip"
+  tags:
+    - install
+
+- name: Unzip build to destination folder
+  unarchive:
+    src: "/tmp/kafka-manager/target/universal/kafka-manager-{{ kafka_manager_version }}.zip"
+    dest: "/opt/kafka-manager"
+  tags:
+    - install
+
+- name: Set configuration
+
+  tags:
+    - configure
+
