@@ -1,5 +1,10 @@
 ---
 
+- name: Install unzip
+  apt:
+    name: unzip
+    state: present
+
 - name: Create destination folder
   file:
     path: /opt/kafka-manager
