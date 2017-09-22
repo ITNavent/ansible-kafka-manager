@@ -9,16 +9,44 @@
   file:
     path: /opt/kafka-manager
     state: directory
+    owner: ubuntu
+    group: ubuntu
 
 - name: Unzip build to destination folder
   unarchive:
     src: http://nexus.navent.biz:8081/nexus/content/repositories/releases/com/yahoo/kafka-manager/{{kafka_manager_version}}/kafka-manager-{{kafka_manager_version}}.zip
     dest: /opt/kafka-manager
     remote_src: True
+    owner: ubuntu
+    group: ubuntu
+
+- name: Set user permissions
+  file:
+    path: /opt/kafka-manager
+    state: directory
+    owner: ubuntu
+    group: ubuntu
+    recurse: yes
 
 - name: Set config file parameters
   template: src=application.conf.j2 dest=/opt/kafka-manager/kafka-manager-{{kafka_manager_version}}/conf/application.conf
 
-- name: start kafka-manager
-  shell: nohup /opt/kafka-manager/kafka-manager-{{kafka_manager_version}}/bin/kafka-manager &
+- name: Create service file
+  template:
+    src: kafka-manager.service
+    dest: /lib/systemd/system/kafka-manager.service
+    mode: 0750
+
+- name: Update systemd
+  become: yes
+  systemd:
+    name: kafka-manager
+    daemon_reload: yes
+
+- name: Start kafka-manager
+  become: yes
+  systemd:
+    enabled: yes
+    name: kafka-manager
+    state: restarted
 
